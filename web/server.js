@@ -136,6 +136,7 @@ app.post('/api/run', (req, res) => {
     dstDb: String(b.dstDb || s.dstDb || '').trim(),
     allowDelete: !!b.allowDelete,
     dryRun: !!b.dryRun,
+    allTables: !!b.allTables,
   };
   if (!opts.srcDb || !opts.dstDb) {
     return res.status(400).json({ ok: false, error: 'الرجاء كتابة اسمَي قاعدة المصدر والوجهة.' });

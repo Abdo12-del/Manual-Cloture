@@ -85,6 +85,7 @@ btnRun.addEventListener('click', async () => {
         srcDb: src, dstDb: dst,
         allowDelete: $('allowDelete').checked,
         dryRun: $('dryRun').checked,
+        allTables: $('allTables').checked,
       }),
     });
     const j = await r.json();

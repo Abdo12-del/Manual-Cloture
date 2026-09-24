@@ -170,7 +170,7 @@ async function importFile(conn, cfg, filePath, label, emitStmts) {
 // ---------------- تشغيل الإقفال ----------------
 async function runCloture(cfg, opts) {
   if (job.running) throw new Error('there is already a running job');
-  const { srcDb, dstDb, allowDelete, dryRun } = opts;
+  const { srcDb, dstDb, allowDelete, dryRun, allTables } = opts;
   job.running = true;
   job.cancel = false;
   job.error = null;
@@ -233,11 +233,25 @@ async function runCloture(cfg, opts) {
     }
     const dstExists = dbList.includes(dstDb);
     log2('قواعد موجودة: ' + dbList.join(', '));
-    log2(dstExists ? 'قاعدة الوجهة موجودة مسبقًا.' : 'قاعدة الوجهة غير موجودة (سبشأنها جديد).');
+    log2(dstExists ? 'قاعدة الوجهة موجودة مسبقًا.' : 'قاعدة الوجهة غير موجودة (ستكون جديدة).');
+    log2(allTables ? 'نمط النقل: كل الجداول (نسخة كاملة لبرنامج gamadev)' : 'نمط النقل: الجداول السبعة (نفس السكربت القديم)');
+
+    // تحديد جداول التصدير: السبعة المعروفة أو كل جداول قاعدة المصدر
+    let exportTables = TABLES;
+    if (allTables) {
+      const [tsAll] = await conn.query('SHOW TABLES FROM `' + srcDb + '`');
+      exportTables = tsAll.map(r => Object.values(r)[0])
+        .filter(t => !/^__mysql_meta$|^sqlite_/i.test(t));
+      if (!exportTables.length) {
+        await conn.end();
+        throw new Error('قاعدة المصدر لا تحتوي أي جداول.');
+      }
+    }
 
     // أسماء الخطوات الثمانية
     const stepTitles = [
-      'تصدير بيانات الجداول السبعة من القاعدة المصدر',
+      (allTables ? 'تصدير كل الجداول (' + exportTables.length + ' جدولًا) من القاعدة المصدر'
+                 : 'تصدير بيانات الجداول السبعة من القاعدة المصدر'),
       'حذف قاعدة الوجهة إن كانت موجودة',
       'إنشاء قاعدة الوجهة',
       'استيراد بنية القاعدة (Schema)',
@@ -251,7 +265,8 @@ async function runCloture(cfg, opts) {
     if (dryRun) {
       log2('');
       log2('===== معاينة الأوامر (لم يُنفَّذ أي شيء) =====');
-      log2('[' + 1 + '/' + TOTAL_STEPS + '] mysqldump-equivalent: ' + srcDb + ' (' + TABLES.join(' ') + ') -> ' + dumpFile);
+      log2('[' + 1 + '/' + TOTAL_STEPS + '] mysqldump-equivalent: ' + srcDb + ' (' +
+        (allTables ? exportTables.length + ' جدولًا = الكل' : TABLES.join(' ')) + ') -> ' + dumpFile);
       if (dstExists) log2('     + نسخة احتياطية كاملة من ' + dstDb + ' -> ' + backupFile);
       log2('[' + 2 + '/' + TOTAL_STEPS + '] DROP DATABASE IF EXISTS ' + dstDb + ';');
       log2('[' + 3 + '/' + TOTAL_STEPS + '] CREATE DATABASE ' + dstDb + ' CHARACTER SET utf8;');
@@ -294,12 +309,12 @@ async function runCloture(cfg, opts) {
 
     const tAll = Date.now();
 
-    // [1] تصدير الجداول السبعة
+    // [1] تصدير الجداول (السبعة أو الكل حسب الخيار)
     job.progress(1, TOTAL_STEPS, stepTitles[0]);
     log2('');
     log2('[' + 1 + '/' + TOTAL_STEPS + '] ' + stepTitles[0]);
     const t1 = Date.now();
-    await dumpTables(conn, cfg, srcDb, TABLES, dumpFile, 'التصدير');
+    await dumpTables(conn, cfg, srcDb, exportTables, dumpFile, 'التصدير');
     log2('     ملف التصدير: ' + dumpFile + '  (' + ((Date.now() - t1) / 1000).toFixed(1) + ' ثانية)');
 
     // [2] حذف الوجهة
@@ -365,7 +380,8 @@ async function runCloture(cfg, opts) {
     log2('');
     log2('===== إحصاء القاعدة الجديدة ' + dstDb + ' =====');
     const summary = {};
-    for (const t of TABLES) {
+    const countTables = allTables ? exportTables : TABLES;
+    for (const t of countTables) {
       try {
         const [r] = await conn.query('SELECT COUNT(*) AS c FROM `' + dstDb + '`.`' + t + '`');
         summary[t] = r[0].c;

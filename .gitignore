@@ -6,3 +6,10 @@ cloture_*.log
 DBCloture_*.sql
 backup_*.sql
 ss20*.txt
+
+# نسخة الويب
+web/node_modules/
+web/work/
+web/cloture-settings.json
+web/demo-server/data/
+web/package-lock.json

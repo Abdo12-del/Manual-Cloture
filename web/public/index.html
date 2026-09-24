@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإقفال السنوي — gamadev</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">C</div>
+    <div>
+      <h1>الإقفال السنوي</h1>
+      <div class="sub">قاعدة بيانات gamadev — انتقال السنة المالية</div>
+    </div>
+  </div>
+  <div id="serverBadge" class="badge">جارٍ الاتصال…</div>
+</header>
+
+<main>
+  <nav class="tabs">
+    <button class="tab active" data-tab="run">الإقفال</button>
+    <button class="tab" data-tab="cfg">الإعدادات</button>
+  </nav>
+
+  <!-- ============ تبويب الإقفال ============ -->
+  <section id="tab-run" class="tabpane active">
+    <div class="card">
+      <div class="fields">
+        <div class="field">
+          <label for="srcDb">قاعدة السنة المنتهية (المصدر)</label>
+          <input id="srcDb" class="db" dir="ltr" placeholder="مثال: ss2025" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="dstDb">قاعدة السنة الجديدة (الوجهة)</label>
+          <input id="dstDb" class="db" dir="ltr" placeholder="مثال: ss2026" autocomplete="off">
+        </div>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="allowDelete">
+        اسمح بحذف قاعدة الوجهة إن كانت موجودة مسبقًا (تُؤخذ نسخة احتياطية أولًا)
+      </label>
+      <label class="check">
+        <input type="checkbox" id="dryRun">
+        عرض الأوامر فقط دون تنفيذ (معاينة)
+      </label>
+
+      <div class="btnrow">
+        <button id="btnRun" class="btn primary big">▶ تنفيذ الإقفال</button>
+        <button id="btnCancel" class="btn danger" disabled>إلغاء</button>
+      </div>
+      <div id="status" class="status">جاهز.</div>
+      <div class="progress"><div id="progressFill"></div></div>
+      <div id="stepTitle" class="steptitle"></div>
+    </div>
+
+    <div class="card">
+      <div class="cardhead">
+        <span>سجل التنفيذ</span>
+        <span id="logFiles" class="muted"></span>
+      </div>
+      <pre id="log" class="log"></pre>
+    </div>
+
+    <div class="card demo">
+      <div class="cardhead"><span>بيانات التجربة</span></div>
+      <p class="muted">
+        خادم MySQL تجريبي يعمل محليًا (بروتوكول MySQL حقيقي). لتجربة البرنامج: جهّز قاعدة
+        <b dir="ltr">ss2025</b> ببيانات تجريبية، ثم اكتب <b dir="ltr">ss2025</b> في المصدر و<b dir="ltr">ss2026</b> في الوجهة.
+      </p>
+      <div class="btnrow">
+        <button id="btnDemo" class="btn">تجهيز بيانات التجربة (ss2025)</button>
+        <button id="btnDemoReset" class="btn ghost">حذف كل قواعد التجربة</button>
+      </div>
+      <div id="demoStatus" class="muted small"></div>
+    </div>
+  </section>
+
+  <!-- ============ تبويب الإعدادات ============ -->
+  <section id="tab-cfg" class="tabpane">
+    <div class="card">
+      <h3>اتصال MySQL</h3>
+      <div class="fields grid4">
+        <div class="field"><label>الخادم (Host)</label><input id="cHost" dir="ltr" autocomplete="off"></div>
+        <div class="field"><label>المنفذ (Port)</label><input id="cPort" dir="ltr" autocomplete="off"></div>
+        <div class="field"><label>المستخدم</label><input id="cUser" dir="ltr" autocomplete="off"></div>
+        <div class="field"><label>كلمة المرور</label><input id="cPass" dir="ltr" type="password" autocomplete="off"></div>
+      </div>
+      <div class="btnrow">
+        <button id="btnTest" class="btn">اختبار الاتصال</button>
+        <span id="testResult" class="status"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>الملفات والمجلدات</h3>
+      <div class="fields">
+        <div class="field"><label>ملف بنية القاعدة (Schema)</label><input id="cSchema" dir="ltr" autocomplete="off"></div>
+        <div class="field"><label>ملف البيانات الأولية (PrimaryData)</label><input id="cPrimary" dir="ltr" autocomplete="off"></div>
+        <div class="field"><label>مجلد العمل (تُكتب فيه النسخ والسجلات)</label><input id="cWork" dir="ltr" autocomplete="off"></div>
+      </div>
+      <div class="btnrow">
+        <button id="btnSave" class="btn primary">حفظ الإعدادات</button>
+        <span id="saveMsg" class="status"></span>
+      </div>
+      <p class="muted small">
+        كلمة المرور تُحفظ في <code dir="ltr">cloture-settings.json</code> بجانب البرنامج ولا تُرسل لأي جهة خارجية.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  برنامج الإقفال السنوي — نسخة الويب · خطوات: تصدير 7 جداول ← حذف/إنشاء الوجهة ← استيراد البنية والبيانات ← ترحيل الأرصدة
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

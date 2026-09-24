@@ -1,0 +1,15 @@
+{
+  "name": "cloture-annuelle",
+  "version": "2.0.0",
+  "description": "برنامج الإقفال السنوي لقاعدة بيانات gamadev — واجهة ويب + خادم MySQL تجريبي مدمج",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "express": "^5.1.0",
+    "mysql2": "^3.24.4"
+  }
+}
